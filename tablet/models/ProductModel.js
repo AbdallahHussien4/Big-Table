@@ -4,7 +4,7 @@ const ProductSchema = new mongoose.Schema(
 	{
 		key: {
 			type: Number,
-			unique: [true, "The key field has to be unique"]
+			unique: [true, "The ket field has to be unique"]
 		},
 		product_name: String,
 		manufacturer: String,

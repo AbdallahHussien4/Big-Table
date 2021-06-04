@@ -23,26 +23,25 @@ dotenv.config({
 //Modules that require dotenv to be defined
 //-----------------------------------------------------------------
 const logger = require("./utils/logger");
-const connectDB = require("./config/connectDB");
 
 //Main
 //-----------------------------------------------------------------
 let app;
+let tablet1Socket = null;
+let tablet2Socket = null;
 (async () => {
-	//Initialize db global variables
-	await connectDB();
+	
 
-	await require("./config/initializeDB")();
+	// NO DB CONNECTION ON CLIENT
 
 	
-	//Initialize global variables from DB.
 	await require("./config/initializeGlobalData")();
 
 	
 
 	// Routers:-
 	// example:
-	// const authenticationRouter = require("./routes/authenticationRoutes");
+	const clientRouter = require("./routes/clientRoutes");
 
 
 
@@ -62,6 +61,8 @@ let app;
 			message: "Too many requests from this IP. please try again in an hour.",
 		},
 	});
+
+
 	app.use("/api", limiter);
 	// Prevent parameter pollution (prevents duplicate query string parameters & duplicate keys in urlencoded body requests)
 	// Add a second HPP middleware to apply the whitelist only to this route. e.g: app.use('/search', hpp({ whitelist: [ 'filter' ] }));
@@ -78,12 +79,17 @@ let app;
 	//Compress http responses before sending it.
 	app.use(compression());
 
-
+	// adding tablet sockets to request object
+	app.use((req,res,next)=>{
+		req.tablet1Socket = tablet1Socket;
+		req.tablet2Socket = tablet2Socket;
+		next();
+	})
 	// Use express routers:-
 	//-----------------------------------------------------------------
 	const apiUrlBase = `${process.env.API_URL_PREFIX}/v${process.env.API_VERSION}`;
-	// example:
-	// app.use(`${apiUrlBase}/authentication`, authenticationRouter);
+	app.use(`${apiUrlBase}/client`, clientRouter);
+
 	app.get(/.*/, function (req, res) {
 		res.status(404).json({
 			message: "NOT FOUND"
@@ -94,20 +100,24 @@ let app;
 		logger.log('error', err);
 		res.status(500).json({
 			status: "fail",
-			message: "Server could not process this request. Note that this server serves only websocket connections to certain servers"
+			message: "Server could not process this request.",
+			error: err
 		});
 	});
 
 
 	// Run express app:-
 	//-----------------------------------------------------------------
-	const port = process.env.PORT || 3000;
+	const myArgs = process.argv.slice(2);
+	const port = myArgs[0] === 'client_1'?process.env.PORT_CLIENT_SERVER_1:myArgs[0] === 'client_2'?process.env.PORT_CLIENT_SERVER_2:3000;
 	const server = app.listen(port, () => {
 		logger.log('info', `✅ App is running now on port ${port}...`);
 	});
 
 	// Establish websocket server (Should be called after app.listen)
-	websocketServer(server);
+	let sockets = websocketServer(server);
+	tablet1Socket = sockets.tablet1Socket;
+	tablet2Socket = sockets.tablet2Socket;
 
 	// Handle unhandled errors:-
 	//-----------------------------------------------------------------

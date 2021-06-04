@@ -17,7 +17,7 @@ exports.protectWs = async (socket, next) => {
 
 			socket.client_info = {
 				id: Number(decoded.sub),		// ex: 1
-				type: decoded.type	// ex: "tablet" [for tablet server] or "client" [for client] --> note that in our design we will not issue any tokens to the client,
+				type: decoded.type	// ex: "client"
 			}
 
 			next();

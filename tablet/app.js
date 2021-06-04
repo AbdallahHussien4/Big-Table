@@ -29,14 +29,15 @@ const connectDB = require("./config/connectDB");
 //-----------------------------------------------------------------
 let app;
 (async () => {
-	//Initialize db global variables
+
+	//Initialize global data
+	await require("./config/initializeGlobalData")();
+
+	//Connect to db
 	await connectDB();
 
 	await require("./config/initializeDB")();
 
-	
-	//Initialize global variables from DB.
-	await require("./config/initializeGlobalData")();
 
 	
 
@@ -62,6 +63,8 @@ let app;
 			message: "Too many requests from this IP. please try again in an hour.",
 		},
 	});
+
+
 	app.use("/api", limiter);
 	// Prevent parameter pollution (prevents duplicate query string parameters & duplicate keys in urlencoded body requests)
 	// Add a second HPP middleware to apply the whitelist only to this route. e.g: app.use('/search', hpp({ whitelist: [ 'filter' ] }));
@@ -101,7 +104,7 @@ let app;
 
 	// Run express app:-
 	//-----------------------------------------------------------------
-	const port = process.env.PORT || 3000;
+	const port = ME === 'tablet_1'?process.env.PORT_TABLET_SERVER_1: ME === 'tablet_2'?process.env.PORT_TABLET_SERVER_2:3000;
 	const server = app.listen(port, () => {
 		logger.log('info', `✅ App is running now on port ${port}...`);
 	});

@@ -1,11 +1,14 @@
 {
-	"name": "bigtable-master",
+	"name": "bigtable-tablet",
 	"version": "1.0.0",
 	"description": "Module in a distributed database system.",
 	"main": "app.js",
 	"scripts": {
 		"start": "node app.js",
-		"develop": "nodemon app.js",
+		"tablet_1": "node app.js tablet_1",
+		"tablet_2": "node app.js tablet_2",
+		"develop_tablet_1": "nodemon app.js tablet_1",
+		"develop_tablet_2": "nodemon app.js tablet_2",
 		"debug": "ndb app.js"
 	},
 	"repository": {
@@ -26,8 +29,8 @@
 		"mongoose": "^5.10.7",
 		"mongoose-id-validator": "^0.6.0",
 		"morgan": "^1.10.0",
-		"socket.io": "^3.1.0",
-		"uuid": "^8.3.2",
+		"socket.io": "^4.1.2",
+		"socket.io-client": "^4.1.2",
 		"validator": "^13.1.17",
 		"winston": "^3.3.3",
 		"xss-clean": "^0.1.1"

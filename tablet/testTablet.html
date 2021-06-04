@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title></title>
+		<meta name="description" content="">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="">
+	</head>
+	<body>
+		<div style="border: solid 1px; padding-left: 5px;">
+
+			<label for="eventName">Event</label><input type="text" name="eventName" id="eventName"><br>
+			<label for="requestBody">request</label><textarea style="width: 50%; height: auto;" rows="20" name="requestBody" id="requestBody"></textarea><br><br>
+			<button id="connect1">Connect to tablet 1</button>
+			<button id="connect2">Connect to tablet 2</button><br/>
+			<button id="send1">send to tablet 1</button>
+			<button id="send2">send to tablet 2</button><br>
+			<button id="disconnect1">disconnect from tablet 1</button>
+			<button id="disconnect2">disconnect from tablet 2</button>
+
+
+
+			<br><br>
+
+
+		</div>
+
+
+		
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.0/socket.io.js"></script>
+
+		
+		<script async defer>
+			(async()=>{
+
+				// A user is redirected to this html page if he is editing/viewing another one's note.
+
+				// Check that the user is logged in. Otherwise redirect to login page.
+				// const user = JSON.parse(localStorage.getItem("user"));
+				// const auth_jwt = localStorage.getItem("auth_jwt");
+				// if(!user || !auth_jwt){
+				// 	window.location.href = "http://127.0.0.1:3000/login";
+				// }
+
+		
+				const eventName = document.getElementById("eventName");
+				const requestBody = document.getElementById("requestBody");
+
+				const sendBtn1 = document.getElementById("send1");
+				const sendBtn2 = document.getElementById("send2");
+
+				const connectTablet1Btn = document.getElementById("connect1");
+				const connectTablet2Btn = document.getElementById("connect2");
+
+				const disconnectBtn1 = document.getElementById("disconnect1");
+				const disconnectBtn2 = document.getElementById("disconnect2");
+
+
+				let socket1, socket2;
+
+				try{
+
+					connectTablet1Btn.addEventListener("click", async()=>{
+						// Establishing websocket connection with the server and passing the note token(edit or view)
+						socket1 = io(`ws://127.0.0.1:7000`, {
+						path: "/ws/connect",
+							extraHeaders: {
+								Authorization: `Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInR5cGUiOiJjbGllbnQiLCJpYXQiOjE2MjE5OTQ0NzF9.YS4HHfoo21uJFCwv1gMmLFSmjPTXt7y6sX94LwH--_K2rshNds1EXRXfQAeloE0L82Bxf9f8Y-tjD3dUsy85U-aUh9odXMJnPpHYL4EPZ1mOrsiOGGE3_DjLF1PnET9ObjFl2tYKs2OmIwEWr38lVbSbUtGFtBAXR38e2Ltlzk-M5XUbDBQh_RcHQ5VBF4GAg-nlD4iANGsTh1hRWATOhRZvIPwQPuilS2zYFOdGw0fYYP-oi7-08OCc3j3o1yPHKkEI85e0_w9WA2jKbkp2WP3y5DswoTQBhgq3wMvREl_fj_nKF9t-LKo487yopoR7dTbqNkgSIEl1_B7c-76k_Rt-zuHw1WWb9mJYeTBZo-1Vhvt4AI0LZ5lHPcpwiznpTc78UyGbhvUItTiIZe2bqKaJ-eGXsWepsyuoWTXnxXxl3n1tRyYrVIIBKPVlm7RhrxT8u2KThQrUtjSgsre8uljBD0vQ1dJ4ZC5ye_PnRMqkk67oxwXHNSoB0C5qlsnjedkMZJdkXIa3747YQuJnLFgu4xUd4AU8jMaIhcnNF-_si2uT9G7Yc7r4DzeyvkmN9LzPS0T236IeI_P_mY8dUml6lE5RKhY5TRuPGHFg314O7lDpjiDwGugPKOTGVE7WrQcRpo6Dnk1NG3wO5Rmeqxj9EU-y4tJzhUh3fw4VaVU`
+							}
+						});
+						
+						socket1.on('connect', async () => {
+							// Get the note
+							console.log("Connection established with tablet server 1");
+						});
+
+						
+						socket1.on("connect_error", err => {
+							console.log("Error in connection:");
+							throw err;
+						});
+					});
+
+					connectTablet2Btn.addEventListener("click", async()=>{
+						// Establishing websocket connection with the server and passing the note token(edit or view)
+						socket2 = io(`ws://127.0.0.1:8000`, {
+						path: "/ws/connect",
+							extraHeaders: {
+								Authorization: `Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInR5cGUiOiJjbGllbnQiLCJpYXQiOjE2MjE5OTQ0NzF9.YS4HHfoo21uJFCwv1gMmLFSmjPTXt7y6sX94LwH--_K2rshNds1EXRXfQAeloE0L82Bxf9f8Y-tjD3dUsy85U-aUh9odXMJnPpHYL4EPZ1mOrsiOGGE3_DjLF1PnET9ObjFl2tYKs2OmIwEWr38lVbSbUtGFtBAXR38e2Ltlzk-M5XUbDBQh_RcHQ5VBF4GAg-nlD4iANGsTh1hRWATOhRZvIPwQPuilS2zYFOdGw0fYYP-oi7-08OCc3j3o1yPHKkEI85e0_w9WA2jKbkp2WP3y5DswoTQBhgq3wMvREl_fj_nKF9t-LKo487yopoR7dTbqNkgSIEl1_B7c-76k_Rt-zuHw1WWb9mJYeTBZo-1Vhvt4AI0LZ5lHPcpwiznpTc78UyGbhvUItTiIZe2bqKaJ-eGXsWepsyuoWTXnxXxl3n1tRyYrVIIBKPVlm7RhrxT8u2KThQrUtjSgsre8uljBD0vQ1dJ4ZC5ye_PnRMqkk67oxwXHNSoB0C5qlsnjedkMZJdkXIa3747YQuJnLFgu4xUd4AU8jMaIhcnNF-_si2uT9G7Yc7r4DzeyvkmN9LzPS0T236IeI_P_mY8dUml6lE5RKhY5TRuPGHFg314O7lDpjiDwGugPKOTGVE7WrQcRpo6Dnk1NG3wO5Rmeqxj9EU-y4tJzhUh3fw4VaVU`
+							}
+						});
+						
+						socket2.on('connect', async () => {
+							// Get the note
+							console.log("Connection established with tablet server 2");
+						});
+
+						
+						socket2.on("connect_error", err => {
+							console.log("Error in connection:");
+							throw err;
+						});
+					});
+					
+					disconnectBtn1.addEventListener("click", async()=>{
+						socket1.disconnect();
+					});
+
+					disconnectBtn2.addEventListener("click", async()=>{
+						socket2.disconnect();
+					});
+				
+				}
+				catch(err)
+				{
+					console.log(err);
+				}
+
+				sendBtn1.addEventListener("click", async()=>{
+					sendMessage(1);
+				});
+				sendBtn2.addEventListener("click", async()=>{
+					sendMessage(2);
+				});
+
+				// send data to server through websocket
+				function sendMessage(tablet){
+					// const msg = {
+					// 	eventName: eventName.value,
+					// 	requestBody: requestBody.value,
+					// }
+					// const msgStr = JSON.stringify(msg);
+					console.log(`me(client): ${requestBody.value}`)
+					if(tablet === 1)
+						socket1.emit(eventName.value, requestBody.value, r => console.log(`tablet server 1: ${r}`));
+					else if(tablet === 2)
+						socket2.emit(eventName.value, requestBody.value, r => console.log(`tablet server 2: ${r}`));
+				}
+
+
+		})()
+		</script>
+	</body>
+</html>
